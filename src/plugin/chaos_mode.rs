@@ -1,0 +1,207 @@
+use nvim_oxi::{
+    api::{
+        self,
+        opts::OptionOpts,
+        types::{WindowConfig, WindowRelativeTo, WindowTitle},
+        Buffer, Window,
+    },
+    Result,
+};
+
+use crate::commands::{ColorSchemeCommand, ModeCommand, VimMotionsHellCommand};
+
+#[derive(Default, PartialEq, Clone, Debug, strum::Display)]
+pub enum Mode {
+    VimMotionsHell(VimMotionsHellCommand),
+
+    ColorScheme(ColorSchemeCommand),
+
+    #[default]
+    None,
+}
+
+#[derive(Clone, Default)]
+pub struct ModeState {
+    pub mode: Mode,
+    pub seconds: u32,
+}
+
+#[derive(Clone)]
+pub struct ChaosModeState {
+    pub win: Option<Window>,
+    pub buf: Buffer,
+    pub commands: Vec<ModeState>,
+}
+
+impl Default for ChaosModeState {
+    fn default() -> Self {
+        Self {
+            buf: 0.into(),
+            win: None,
+            commands: Vec::default(),
+        }
+    }
+}
+
+impl ChaosModeState {
+    pub fn init(&mut self) -> Result<()> {
+        self.buf = api::create_buf(false, true)?;
+
+        Ok(())
+    }
+
+    fn stop_command(&self, mode: &Mode) -> Result<()> {
+        if let Mode::VimMotionsHell(mode) = mode {
+            mode.stop()?;
+        }
+
+        if let Mode::ColorScheme(mode) = mode {
+            mode.stop()?;
+        }
+
+        Ok(())
+    }
+
+    fn start_command(&self, mode: &Mode) -> Result<()> {
+        if let Mode::VimMotionsHell(mode) = mode {
+            mode.start()?;
+        }
+
+        if let Mode::ColorScheme(mode) = mode {
+            mode.start()?;
+        }
+
+        Ok(())
+    }
+
+    pub fn set_mode(&mut self, mode: Mode, seconds: u32) -> Result<()> {
+        let current = self.commands.iter_mut().find(|x| x.mode == mode);
+
+        if let Some(current) = current {
+            current.seconds = seconds;
+        } else {
+            self.start_command(&mode)?;
+            self.commands.push(ModeState { mode, seconds });
+        }
+
+        self.update()?;
+
+        Ok(())
+    }
+
+    pub fn tick(&mut self) -> Result<()> {
+        let commands = self.commands.iter();
+
+        for command in commands {
+            if command.seconds == 0 {
+                self.stop_command(&command.mode)?;
+            }
+        }
+
+        self.commands.retain(|x| x.seconds != 0);
+
+        let count = self.commands.len();
+
+        let commands = self.commands.iter_mut();
+
+        for command in commands {
+            let seconds = command.seconds;
+
+            if seconds > 0 {
+                command.seconds = seconds - 1;
+            }
+        }
+
+        if count == 0 {
+            self.close_win()?;
+        } else {
+            self.update()?;
+        }
+
+        Ok(())
+    }
+
+    fn update(&mut self) -> Result<()> {
+        let lines: Vec<String> = self
+            .commands
+            .iter_mut()
+            .map(|x| {
+                let seconds = x.seconds;
+
+                let minutes = seconds / 60;
+                let seconds = seconds % 60;
+
+                let mode = format!("  {:0>2}:{:0>2}  {}  ", minutes, seconds, x.mode);
+
+                mode
+            })
+            .collect();
+
+        let width: u32 = lines
+            .clone()
+            .into_iter()
+            .fold(0, |result, item| {
+                if item.len() > result {
+                    item.len()
+                } else {
+                    result
+                }
+            })
+            .try_into()
+            .unwrap();
+
+        let mut lines: Vec<String> = lines;
+
+        lines.insert(0, String::new());
+        lines.push(String::new());
+
+        let height: u32 = lines.len().try_into().unwrap();
+
+        self.buf.set_lines(0..lines.len(), false, lines)?;
+
+        self.open_win(width, height)?;
+
+        Ok(())
+    }
+
+    pub fn close_win(&mut self) -> Result<()> {
+        if let Some(win) = self.win.take() {
+            win.close(false)?;
+        }
+
+        Ok(())
+    }
+
+    pub fn open_win(&mut self, width: u32, height: u32) -> Result<()> {
+        let title = WindowTitle::SimpleString(nvim_oxi::String::from("Chaos Neovim"));
+
+        let opts = OptionOpts::builder()
+            .scope(api::opts::OptionScope::Global)
+            .build();
+
+        let cols = api::get_option_value::<u32>("columns", &opts)?;
+
+        let x = cols - 4 - width;
+        let y = 1;
+
+        let config = WindowConfig::builder()
+            .relative(WindowRelativeTo::Editor)
+            .border(nvim_oxi::api::types::WindowBorder::Rounded)
+            .style(nvim_oxi::api::types::WindowStyle::Minimal)
+            .title(title)
+            .width(width)
+            .height(height)
+            .col(x)
+            .row(y)
+            .build();
+
+        if let Some(win) = &mut self.win {
+            win.set_config(&config)?;
+        } else {
+            let win = api::open_win(&self.buf, false, &config)?;
+            self.win = Some(win);
+        }
+
+        Ok(())
+    }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "nvim_chaos"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+default = ["nvim-oxi/neovim-0-10", "nvim-oxi/test", "nvim-oxi/libuv"]
+
+[dependencies]
+nvim-oxi = "0.5"
+rand = "0.8.5"
+strum = { version = "0.26", features = ["derive"] }
+tokio = "1.38.0"
+twitch-irc = "5.0.1"
