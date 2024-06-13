@@ -2,7 +2,7 @@
 
 Neovim plugin which makes coding difficult if you a Twitch streamer.
 
-# Features
+## Features
 Showwing message from chatter inside the editor
 Changing current colorscheme
 Enabling Vim Motions Hell mode which inverts hjkl bindings
