@@ -10,7 +10,9 @@ use nvim_oxi::{
 pub mod chaos_mode;
 pub mod message;
 
-use chaos_mode::{ChaosModeState, Mode};
+use chaos_mode::ChaosModeState;
+
+use crate::commands::{Mode, ModeType};
 
 #[derive(Clone, Default)]
 pub struct State {
@@ -45,9 +47,9 @@ impl Plugin {
         Ok(())
     }
 
-    pub fn set_mode(&mut self, mode: Mode, seconds: u32) -> Result<()> {
+    pub fn set_mode(&mut self, mode: Mode, mode_type: ModeType, seconds: u32) -> Result<()> {
         let mut state = self.state.borrow_mut();
-        state.chaos_mode.set_mode(mode, seconds)?;
+        state.chaos_mode.set_mode(mode, mode_type, seconds)?;
 
         Ok(())
     }

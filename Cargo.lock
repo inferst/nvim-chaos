@@ -375,6 +375,7 @@ dependencies = [
 name = "nvim_chaos"
 version = "0.1.0"
 dependencies = [
+ "enum_dispatch",
  "nvim-oxi",
  "rand",
  "strum",

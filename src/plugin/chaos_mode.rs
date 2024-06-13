@@ -8,21 +8,12 @@ use nvim_oxi::{
     Result,
 };
 
-use crate::commands::{ColorSchemeCommand, ModeCommand, VimMotionsHellCommand};
+use crate::commands::{Mode, ModeCommand, ModeType};
 
-#[derive(Default, PartialEq, Clone, Debug, strum::Display)]
-pub enum Mode {
-    VimMotionsHell(VimMotionsHellCommand),
-
-    ColorScheme(ColorSchemeCommand),
-
-    #[default]
-    None,
-}
-
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct ModeState {
     pub mode: Mode,
+    pub mode_type: ModeType,
     pub seconds: u32,
 }
 
@@ -51,38 +42,26 @@ impl ChaosModeState {
     }
 
     fn stop_command(&self, mode: &Mode) -> Result<()> {
-        if let Mode::VimMotionsHell(mode) = mode {
-            mode.stop()?;
-        }
-
-        if let Mode::ColorScheme(mode) = mode {
-            mode.stop()?;
-        }
+        mode.stop()?;
 
         Ok(())
     }
 
     fn start_command(&self, mode: &Mode) -> Result<()> {
-        if let Mode::VimMotionsHell(mode) = mode {
-            mode.start()?;
-        }
-
-        if let Mode::ColorScheme(mode) = mode {
-            mode.start()?;
-        }
+        mode.start()?;
 
         Ok(())
     }
 
-    pub fn set_mode(&mut self, mode: Mode, seconds: u32) -> Result<()> {
-        let current = self.commands.iter_mut().find(|x| x.mode == mode);
+    pub fn set_mode(&mut self, mode: Mode, mode_type: ModeType, seconds: u32) -> Result<()> {
+        self.commands.retain(|x| x.mode_type != mode_type);
 
-        if let Some(current) = current {
-            current.seconds = seconds;
-        } else {
-            self.start_command(&mode)?;
-            self.commands.push(ModeState { mode, seconds });
-        }
+        self.start_command(&mode)?;
+        self.commands.push(ModeState {
+            mode,
+            mode_type,
+            seconds,
+        });
 
         self.update()?;
 

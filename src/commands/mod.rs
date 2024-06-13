@@ -1,14 +1,31 @@
+use enum_dispatch::enum_dispatch;
 use nvim_oxi::{
     api::{self, opts::ParseCmdOpts},
     Result,
 };
 
+#[enum_dispatch(Mode)]
 pub trait ModeCommand {
     fn start(&self) -> Result<()>;
 
     fn stop(&self) -> Result<()>;
 
     fn name(&self) -> String;
+}
+
+#[enum_dispatch]
+#[derive(PartialEq, Clone, Debug, strum::Display)]
+pub enum Mode {
+    VimMotionsHellCommand,
+
+    ColorSchemeCommand,
+}
+
+#[derive(Clone, PartialEq, Eq)]
+pub enum ModeType {
+    VimMotionsHellType,
+
+    ColorSchemeType,
 }
 
 #[derive(Default, PartialEq, Clone, Debug)]
@@ -37,6 +54,7 @@ impl ModeCommand for ColorSchemeCommand {
 
     fn stop(&self) -> Result<()> {
         api::command("colorscheme vscode")?;
+        api::command("set background=dark")?;
 
         Ok(())
     }

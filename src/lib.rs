@@ -1,6 +1,5 @@
-use commands::{ColorSchemeCommand, VimMotionsHellCommand};
+use commands::{ColorSchemeCommand, Mode, ModeType, VimMotionsHellCommand};
 use nvim_oxi::{libuv::AsyncHandle, schedule, Result};
-use plugin::chaos_mode::Mode;
 use std::thread;
 use tokio::sync::mpsc::{self};
 
@@ -39,19 +38,20 @@ pub fn nvim_chaos() -> Result<()> {
                     });
             }
             TwitchCommand::ColorScheme(colorscheme) => {
+                let mode: Mode = ColorSchemeCommand { colorscheme }.into();
+
                 plugin
-                    .set_mode(
-                        Mode::ColorScheme(ColorSchemeCommand { colorscheme }),
-                        5 * 60,
-                    )
+                    .set_mode(mode, ModeType::ColorSchemeType, 5 * 60)
                     .unwrap_or_else(|e| {
                         let error_string = format!("Plugin Error: {e}");
                         Plugin::err(&error_string);
                     });
             }
             TwitchCommand::VimMotionsHell => {
+                let mode: Mode = VimMotionsHellCommand {}.into();
+
                 plugin
-                    .set_mode(Mode::VimMotionsHell(VimMotionsHellCommand {}), 60)
+                    .set_mode(mode, ModeType::VimMotionsHellType, 60)
                     .unwrap_or_else(|e| {
                         let error_string = format!("Plugin Error: {e}");
                         Plugin::err(&error_string);
