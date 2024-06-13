@@ -1,6 +1,6 @@
 # Chaos Neovim
 
-Neovim plugin which makes coding difficult if you a Twitch streamer.
+Neovim plugin which makes coding difficult if you're a Twitch streamer.
 
 ## Features
 Showwing message from chatter inside the editor
