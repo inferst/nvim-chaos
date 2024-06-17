@@ -378,7 +378,10 @@ dependencies = [
  "enum_dispatch",
  "nvim-oxi",
  "rand",
+ "serde",
+ "serde_path_to_error",
  "strum",
+ "thiserror",
  "tokio",
  "twitch-irc",
 ]
@@ -595,6 +598,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_path_to_error"
+version = "0.1.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af99884400da37c88f5e9146b7f1fd0fbcae8f6eec4e9da38b67d05486f814a6"
+dependencies = [
+ "itoa",
+ "serde",
 ]
 
 [[package]]

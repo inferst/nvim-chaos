@@ -13,6 +13,9 @@ default = ["nvim-oxi/neovim-0-10", "nvim-oxi/test", "nvim-oxi/libuv"]
 enum_dispatch = "0.3.13"
 nvim-oxi = "0.5"
 rand = "0.8.5"
+serde = { version = "1.0.203", features = ["derive"] }
+serde_path_to_error = "0.1.16"
 strum = { version = "0.26", features = ["derive"] }
+thiserror = "1.0.61"
 tokio = "1.38.0"
 twitch-irc = "5.0.1"

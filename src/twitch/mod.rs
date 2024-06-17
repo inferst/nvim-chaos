@@ -5,6 +5,8 @@ use twitch_irc::{
     TwitchIRCClient,
 };
 
+use crate::plugin::config::Config;
+
 #[derive(Debug)]
 pub enum TwitchCommand {
     Message(String, String),
@@ -21,11 +23,11 @@ pub struct TwitchCommandPayload {
 pub async fn init(
     handle: AsyncHandle,
     sender: UnboundedSender<TwitchCommandPayload>,
-    channel: String,
+    config: Config,
 ) -> Result<()> {
-    let config = ClientConfig::default();
+    let client_config = ClientConfig::default();
     let (mut incoming_messages, client) =
-        TwitchIRCClient::<SecureTCPTransport, StaticLoginCredentials>::new(config);
+        TwitchIRCClient::<SecureTCPTransport, StaticLoginCredentials>::new(client_config);
 
     let join_handle = tokio::spawn(async move {
         while let Some(message) = incoming_messages.recv().await {
@@ -35,46 +37,49 @@ pub async fn init(
                 let command = split.next();
                 let argument = split.next();
 
-                if let Some("!msg") = command {
-                    if let Some(text) = argument {
+                if let Some((command, argument)) = command.zip(argument) {
+                    if command == config.commands.message {
                         sender
                             .send(TwitchCommandPayload {
-                                command: TwitchCommand::Message(msg.sender.name, text.to_owned()),
+                                command: TwitchCommand::Message(
+                                    msg.sender.name,
+                                    argument.to_owned(),
+                                ),
                             })
                             .unwrap();
 
                         handle.send().unwrap();
                     }
-                }
 
-                if let Some("!colorscheme") = command {
-                    if let Some(colorscheme) = argument {
+                    if command == config.commands.colorscheme {
                         sender
                             .send(TwitchCommandPayload {
-                                command: TwitchCommand::ColorScheme(colorscheme.to_owned()),
+                                command: TwitchCommand::ColorScheme(argument.to_owned()),
                             })
                             .unwrap();
 
                         handle.send().unwrap();
                     }
-                }
 
-                if let Some("!lkjh") = command {
-                    sender
-                        .send(TwitchCommandPayload {
-                            command: TwitchCommand::VimMotionsHell,
-                        })
-                        .unwrap();
+                    if command == config.commands.hell {
+                        sender
+                            .send(TwitchCommandPayload {
+                                command: TwitchCommand::VimMotionsHell,
+                            })
+                            .unwrap();
 
-                    handle.send().unwrap();
+                        handle.send().unwrap();
+                    }
                 }
             }
         }
     });
 
-    client.join(channel).unwrap_or_else(|e| {
-        println!("{e}");
-    });
+    if let Some(channel) = config.channel {
+        client.join(channel).unwrap_or_else(|e| {
+            println!("{e}");
+        });
+    }
 
     join_handle.await.unwrap();
 

@@ -1,14 +1,10 @@
-use commands::{ColorSchemeCommand, Mode, ModeType, VimMotionsHellCommand};
-use nvim_oxi::{libuv::AsyncHandle, schedule, Result};
-use std::thread;
-use tokio::sync::mpsc::{self};
+use nvim_oxi::{Dictionary, Result};
 
 mod commands;
 mod plugin;
 mod twitch;
 
 use plugin::Plugin;
-use twitch::{TwitchCommand, TwitchCommandPayload};
 
 /// # Panics
 ///
@@ -17,54 +13,9 @@ use twitch::{TwitchCommand, TwitchCommandPayload};
 /// # Errors
 ///
 #[nvim_oxi::plugin]
-pub fn nvim_chaos() -> Result<()> {
-    let (sender, mut receiver) = mpsc::unbounded_channel::<TwitchCommandPayload>();
-
+pub fn nvim_chaos() -> Result<Dictionary> {
     let mut plugin = Plugin::default();
-    plugin.init()?;
+    let api = plugin.build_api()?;
 
-    let handle = AsyncHandle::new(move || {
-        let payload = receiver.blocking_recv().expect("Payload receiving error");
-
-        let mut plugin = plugin.clone();
-
-        schedule(move |()| match payload.command {
-            TwitchCommand::Message(author, text) => {
-                plugin
-                    .show_msg(author.as_str(), text.as_str())
-                    .unwrap_or_else(|e| {
-                        let error_string = format!("Plugin Error: {e}");
-                        Plugin::err(&error_string);
-                    });
-            }
-            TwitchCommand::ColorScheme(colorscheme) => {
-                let mode: Mode = ColorSchemeCommand { colorscheme }.into();
-
-                plugin
-                    .set_mode(mode, ModeType::ColorSchemeType, 5 * 60)
-                    .unwrap_or_else(|e| {
-                        let error_string = format!("Plugin Error: {e}");
-                        Plugin::err(&error_string);
-                    });
-            }
-            TwitchCommand::VimMotionsHell => {
-                let mode: Mode = VimMotionsHellCommand {}.into();
-
-                plugin
-                    .set_mode(mode, ModeType::VimMotionsHellType, 60)
-                    .unwrap_or_else(|e| {
-                        let error_string = format!("Plugin Error: {e}");
-                        Plugin::err(&error_string);
-                    });
-            }
-        });
-    })?;
-
-    thread::spawn(move || {
-        twitch::init(handle, sender, "mikerime".to_owned()).unwrap_or_else(|e| {
-            println!("{e}");
-        });
-    });
-
-    Ok(())
+    Ok(api)
 }
