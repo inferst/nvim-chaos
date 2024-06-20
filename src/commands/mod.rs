@@ -74,6 +74,11 @@ impl ModeCommand for VimMotionsHellCommand {
         api::command("noremap j k")?;
         api::command("noremap h l")?;
 
+        api::command("noremap w b")?;
+        api::command("noremap b w")?;
+        api::command("noremap e ge")?;
+        api::command("noremap ge e")?;
+
         Ok(())
     }
 
@@ -82,6 +87,11 @@ impl ModeCommand for VimMotionsHellCommand {
         api::command("noremap k k")?;
         api::command("noremap j j")?;
         api::command("noremap h h")?;
+
+        api::command("noremap w w")?;
+        api::command("noremap b b")?;
+        api::command("noremap e e")?;
+        api::command("noremap ge ge")?;
 
         Ok(())
     }

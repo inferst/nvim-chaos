@@ -60,7 +60,9 @@ pub async fn init(
 
                         handle.send().unwrap();
                     }
+                }
 
+                if let Some(command) = command {
                     if command == config.commands.hell {
                         sender
                             .send(TwitchCommandPayload {

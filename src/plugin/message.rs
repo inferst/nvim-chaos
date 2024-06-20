@@ -38,9 +38,12 @@ impl MessageState {
             if i % width == 0 {
                 result.push(String::new());
             }
+
             let last = result.last_mut().unwrap();
             last.push(item);
+
             i += 1;
+
             result
         });
 

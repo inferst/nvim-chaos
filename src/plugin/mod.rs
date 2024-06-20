@@ -1,9 +1,9 @@
 use std::{cell::RefCell, rc::Rc, thread, time::Duration};
 
-use config::Config;
+use config::{Config, Error};
 use message::MessageState;
 use nvim_oxi::{
-    api,
+    api::{self, opts::EchoOpts},
     libuv::{AsyncHandle, TimerHandle},
     schedule, Dictionary, Function, Object, Result,
 };
@@ -91,13 +91,31 @@ impl Plugin {
         Ok(())
     }
 
+    fn parse_config(&mut self, preferences: Object) {
+        let config = Config::try_from(preferences);
+
+        match config {
+            Ok(config) => {
+                self.init(config).unwrap();
+            }
+            Err(error) => {
+                let opts = EchoOpts::builder().build();
+                let chunks = [
+                    ("[nvim-chaos]", Some("NvimChaosErrTag")),
+                    (" ", None),
+                    (&format!("{}", error), None),
+                ];
+                let _ = api::echo(chunks, true, &opts);
+            }
+        }
+    }
+
     pub fn build_api(&mut self) -> Result<Dictionary> {
         let plugin = self.clone();
 
         let setup = Function::from_fn(move |preferences: Object| {
-            let config = Config::try_from(preferences).unwrap();
             let mut plugin = plugin.clone();
-            plugin.init(config).unwrap();
+            plugin.parse_config(preferences);
         });
 
         let api = Dictionary::from_iter([("setup", setup)]);
