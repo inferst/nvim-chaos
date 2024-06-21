@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc, thread, time::Duration};
 
-use config::{Config, Error};
+use config::Config;
 use message::MessageState;
 use nvim_oxi::{
     api::{self, opts::EchoOpts},
@@ -39,39 +39,7 @@ impl Plugin {
 
         let handle = AsyncHandle::new(move || {
             let payload = receiver.blocking_recv().expect("Payload receiving error");
-
-            let mut plugin = plugin.clone();
-
-            schedule(move |()| match payload.command {
-                TwitchCommand::Message(author, text) => {
-                    plugin
-                        .show_msg(author.as_str(), text.as_str())
-                        .unwrap_or_else(|e| {
-                            let error_string = format!("Plugin Error: {e}");
-                            Plugin::err(&error_string);
-                        });
-                }
-                TwitchCommand::ColorScheme(colorscheme) => {
-                    let mode: Mode = ColorSchemeCommand { colorscheme }.into();
-
-                    plugin
-                        .set_mode(mode, ModeType::ColorSchemeType, 5 * 60)
-                        .unwrap_or_else(|e| {
-                            let error_string = format!("Plugin Error: {e}");
-                            Plugin::err(&error_string);
-                        });
-                }
-                TwitchCommand::VimMotionsHell => {
-                    let mode: Mode = VimMotionsHellCommand {}.into();
-
-                    plugin
-                        .set_mode(mode, ModeType::VimMotionsHellType, 60)
-                        .unwrap_or_else(|e| {
-                            let error_string = format!("Plugin Error: {e}");
-                            Plugin::err(&error_string);
-                        });
-                }
-            });
+            plugin.handle_payload(payload);
         })?;
 
         if config.channel.is_some() {
@@ -86,6 +54,35 @@ impl Plugin {
             let mut state = self.state.borrow_mut();
             state.chaos_mode.init()?;
             state.message.init()?;
+        }
+
+        Ok(())
+    }
+
+    fn handle_payload(&self, payload: TwitchCommandPayload) {
+        let mut plugin = self.clone();
+
+        schedule(move |()| match plugin.parse_command(payload.command) {
+            Err(error) => {
+                Plugin::err(&format!("[nvim-chaos] {}", error));
+            }
+            _ => {}
+        });
+    }
+
+    fn parse_command(&mut self, command: TwitchCommand) -> Result<()> {
+        match command {
+            TwitchCommand::Message(author, text) => {
+                self.show_msg(author.as_str(), text.as_str())?;
+            }
+            TwitchCommand::ColorScheme(colorscheme) => {
+                let mode: Mode = ColorSchemeCommand { colorscheme }.into();
+                self.set_mode(mode, ModeType::ColorSchemeType, 5 * 60)?;
+            }
+            TwitchCommand::VimMotionsHell => {
+                let mode: Mode = VimMotionsHellCommand {}.into();
+                self.set_mode(mode, ModeType::VimMotionsHellType, 60)?;
+            }
         }
 
         Ok(())
