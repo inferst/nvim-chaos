@@ -36,9 +36,9 @@ checksum = "0c4b4d0bd25bd0b74681c0ad21497610ce1b7c91b1022cd21c80c6fbdd9476b0"
 
 [[package]]
 name = "backtrace"
-version = "0.3.72"
+version = "0.3.73"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17c6a35df3749d2e8bb1b7b21a976d82b15548788d2735b9d82f329268f71a11"
+checksum = "5cc23269a4f8976d0a4d2e7109211a419fe30e8d88d677cd60b6bc79c5732e0a"
 dependencies = [
  "addr2line",
  "cc",
@@ -198,9 +198,9 @@ checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 
 [[package]]
 name = "heck"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
+checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "itoa"
@@ -228,9 +228,9 @@ checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
 name = "memchr"
-version = "2.7.2"
+version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c8640c5d730cb13ebd907d8d04b52f55ac9a2eec55b440c8892f40d56c76c1d"
+checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
 name = "mini-internal"
@@ -256,9 +256,9 @@ dependencies = [
 
 [[package]]
 name = "miniz_oxide"
-version = "0.7.3"
+version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87dfd01fe195c66b572b37921ad8803d010623c0aca821bea2302239d155cdae"
+checksum = "b8a240ddb74feaf34a79a7add65a741f3167852fba007066dcac1ca548d89c08"
 dependencies = [
  "adler",
 ]
@@ -302,9 +302,8 @@ dependencies = [
 
 [[package]]
 name = "nvim-oxi"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09ccc950ab8107c9a31cf45d1601251022be3aa9c8547148a25402da074b51fe"
+version = "0.5.1"
+source = "git+https://github.com/noib3/nvim-oxi.git?branch=main#ff436db225abcc6b7c8e05055602e792325fbd67"
 dependencies = [
  "miniserde",
  "nvim-oxi-api",
@@ -317,9 +316,8 @@ dependencies = [
 
 [[package]]
 name = "nvim-oxi-api"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "212b0fe73d8aace5f61ec5c7d48a218aa988cd78afbc9b7b9412083404fed51d"
+version = "0.5.1"
+source = "git+https://github.com/noib3/nvim-oxi.git?branch=main#ff436db225abcc6b7c8e05055602e792325fbd67"
 dependencies = [
  "nvim-oxi-luajit",
  "nvim-oxi-macros",
@@ -331,9 +329,8 @@ dependencies = [
 
 [[package]]
 name = "nvim-oxi-libuv"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf5482cd89c0ac5a4b1cdbd37211677b378af73f813bc785dad15e8a04bd4684"
+version = "0.5.1"
+source = "git+https://github.com/noib3/nvim-oxi.git?branch=main#ff436db225abcc6b7c8e05055602e792325fbd67"
 dependencies = [
  "nvim-oxi-luajit",
  "thiserror",
@@ -341,18 +338,16 @@ dependencies = [
 
 [[package]]
 name = "nvim-oxi-luajit"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d014e4348a1679c82c820f0cc1abe57dba2940b9b490978177a16cb9fd19a39"
+version = "0.5.1"
+source = "git+https://github.com/noib3/nvim-oxi.git?branch=main#ff436db225abcc6b7c8e05055602e792325fbd67"
 dependencies = [
  "thiserror",
 ]
 
 [[package]]
 name = "nvim-oxi-macros"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48426a78ae72c66a61ff16bcec2b218d25d55f38491e10b3712354727c0c53ab"
+version = "0.5.1"
+source = "git+https://github.com/noib3/nvim-oxi.git?branch=main#ff436db225abcc6b7c8e05055602e792325fbd67"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -361,9 +356,8 @@ dependencies = [
 
 [[package]]
 name = "nvim-oxi-types"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ec4563e0e8d9de12dadee68be2bfe99827a73cd11349ab97441458e9a0f0f6c"
+version = "0.5.1"
+source = "git+https://github.com/noib3/nvim-oxi.git?branch=main#ff436db225abcc6b7c8e05055602e792325fbd67"
 dependencies = [
  "libc",
  "nvim-oxi-luajit",
@@ -388,9 +382,9 @@ dependencies = [
 
 [[package]]
 name = "object"
-version = "0.35.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8ec7ab813848ba4522158d5517a6093db1ded27575b070f4177b8d12b41db5e"
+checksum = "576dfe1fc8f9df304abb159d767a29d0476f7750fbf8aa7ad07816004a207434"
 dependencies = [
  "memchr",
 ]
@@ -471,9 +465,9 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.85"
+version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22244ce15aa966053a896d1accb3a6e68469b97c7f33f284b99f0d576879fc23"
+checksum = "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77"
 dependencies = [
  "unicode-ident",
 ]
@@ -538,9 +532,9 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.16"
+version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "092474d1a01ea8278f69e6a358998405fae5b8b963ddaeb2b0b04a128bf1dfb0"
+checksum = "955d28af4278de8121b7ebeb796b6a45735dc01436d898801014aced2773a3d6"
 
 [[package]]
 name = "ryu"
@@ -657,9 +651,9 @@ dependencies = [
 
 [[package]]
 name = "strum_macros"
-version = "0.26.2"
+version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6cf59daf282c0a494ba14fd21610a0325f9f90ec9d1231dea26bcb1d696c946"
+checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -670,9 +664,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.66"
+version = "2.0.67"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c42f3f41a2de00b01c0aaad383c5a45241efc8b2d1eda5661812fda5f3cdcff5"
+checksum = "ff8655ed1d86f3af4ee3fd3263786bc14245ad17c4c7e85ba7187fb3ae028c90"
 dependencies = [
  "proc-macro2",
  "quote",

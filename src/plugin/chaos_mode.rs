@@ -2,7 +2,7 @@ use nvim_oxi::{
     api::{
         self,
         opts::OptionOpts,
-        types::{WindowConfig, WindowRelativeTo, WindowTitle},
+        types::{WindowConfig, WindowRelativeTo, WindowTitle, WindowTitlePosition},
         Buffer, Window,
     },
     Result,
@@ -19,8 +19,8 @@ pub struct ModeState {
 
 #[derive(Clone)]
 pub struct ChaosModeState {
-    pub win: Option<Window>,
     pub buf: Buffer,
+    pub win: Option<Window>,
     pub commands: Vec<ModeState>,
 }
 
@@ -54,16 +54,18 @@ impl ChaosModeState {
     }
 
     pub fn set_mode(&mut self, mode: Mode, mode_type: ModeType, seconds: u32) -> Result<()> {
-        self.commands.retain(|x| x.mode_type != mode_type);
+        if mode.is_valid()? {
+            self.commands.retain(|x| x.mode_type != mode_type);
 
-        self.start_command(&mode)?;
-        self.commands.push(ModeState {
-            mode,
-            mode_type,
-            seconds,
-        });
+            self.start_command(&mode)?;
+            self.commands.push(ModeState {
+                mode,
+                mode_type,
+                seconds,
+            });
 
-        self.update()?;
+            self.update()?;
+        }
 
         Ok(())
     }
@@ -110,7 +112,7 @@ impl ChaosModeState {
                 let minutes = seconds / 60;
                 let seconds = seconds % 60;
 
-                let mode = format!("  {:0>2}:{:0>2}  {}  ", minutes, seconds, x.mode);
+                let mode = format!("  {:0>2}:{:0>2}  {}  ", minutes, seconds, x.mode.name());
 
                 mode
             })
@@ -153,6 +155,7 @@ impl ChaosModeState {
 
     pub fn open_win(&mut self, width: u32, height: u32) -> Result<()> {
         let title = WindowTitle::SimpleString(nvim_oxi::String::from("Chaos Neovim"));
+        let title_pos = WindowTitlePosition::Center;
 
         let opts = OptionOpts::builder()
             .scope(api::opts::OptionScope::Global)
@@ -168,6 +171,7 @@ impl ChaosModeState {
             .border(nvim_oxi::api::types::WindowBorder::Rounded)
             .style(nvim_oxi::api::types::WindowStyle::Minimal)
             .title(title)
+            .title_pos(title_pos)
             .width(width)
             .height(height)
             .col(x)
@@ -175,7 +179,12 @@ impl ChaosModeState {
             .build();
 
         if let Some(win) = &mut self.win {
-            win.set_config(&config)?;
+            if win.is_valid() {
+                win.set_config(&config)?;
+            } else {
+                let win = api::open_win(&self.buf, false, &config)?;
+                self.win = Some(win);
+            }
         } else {
             let win = api::open_win(&self.buf, false, &config)?;
             self.win = Some(win);

@@ -6,12 +6,9 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
-[features]
-default = ["nvim-oxi/neovim-0-10", "nvim-oxi/test", "nvim-oxi/libuv"]
-
 [dependencies]
 enum_dispatch = "0.3.13"
-nvim-oxi = "0.5"
+nvim-oxi = { git = "https://github.com/noib3/nvim-oxi.git", branch = "main", features = [ "neovim-0-10", "test", "libuv", ]}
 rand = "0.8.5"
 serde = { version = "1.0.203", features = ["derive"] }
 serde_path_to_error = "0.1.16"

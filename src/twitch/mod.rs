@@ -10,7 +10,7 @@ use crate::plugin::config::Config;
 #[derive(Debug)]
 pub enum TwitchCommand {
     Message(String, String),
-    ColorScheme(String),
+    ColorScheme(String, String),
     VimMotionsHell,
 }
 
@@ -32,12 +32,13 @@ pub async fn init(
     let join_handle = tokio::spawn(async move {
         while let Some(message) = incoming_messages.recv().await {
             if let ServerMessage::Privmsg(msg) = message {
-                let mut split = msg.message_text.trim().splitn(2, ' ');
+                let mut split = msg.message_text.trim().splitn(3, ' ');
 
                 let command = split.next();
-                let argument = split.next();
+                let argument1 = split.next();
+                let argument2 = split.next();
 
-                if let Some((command, argument)) = command.zip(argument) {
+                if let Some((command, argument)) = command.zip(argument1) {
                     if command == config.commands.message {
                         sender
                             .send(TwitchCommandPayload {
@@ -50,11 +51,18 @@ pub async fn init(
 
                         handle.send().unwrap();
                     }
+                }
+
+                if let Some((command, argument1)) = command.zip(argument1) {
+                    let argument2 = argument2.unwrap_or("");
 
                     if command == config.commands.colorscheme {
                         sender
                             .send(TwitchCommandPayload {
-                                command: TwitchCommand::ColorScheme(argument.to_owned()),
+                                command: TwitchCommand::ColorScheme(
+                                    argument1.to_owned(),
+                                    argument2.to_owned(),
+                                ),
                             })
                             .unwrap();
 
