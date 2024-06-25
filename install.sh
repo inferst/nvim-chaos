@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 # The root of the project.
 PRJ_ROOT="${PRJ_ROOT:-$(git rev-parse --show-toplevel)}"

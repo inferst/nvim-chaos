@@ -12,6 +12,7 @@ use super::ModeCommand;
 #[derive(Default, Debug, Clone, PartialEq)]
 pub(crate) enum Background {
     #[default]
+    Default,
     Dark,
     Light,
 }
@@ -23,7 +24,7 @@ impl FromStr for Background {
         match value {
             "dark" => Ok(Background::Dark),
             "light" => Ok(Background::Light),
-            _ => Ok(Background::Dark),
+            _ => Ok(Background::Default),
         }
     }
 }
@@ -33,6 +34,7 @@ impl ToString for Background {
         match self {
             Background::Dark => String::from("dark"),
             Background::Light => String::from("light"),
+            Background::Default => String::from(""),
         }
     }
 }
@@ -57,7 +59,10 @@ impl ModeCommand for ColorSchemeCommand {
         if let Some(arg) = arg {
             cmd.push_str(arg);
             api::command(&cmd)?;
-            api::command(&format!("set background={}", self.background.to_string()))?;
+
+            if self.background != Background::Default {
+                api::command(&format!("set background={}", self.background.to_string()))?;
+            }
         }
 
         Ok(())
