@@ -28,23 +28,37 @@ pub struct State {
 #[derive(Clone, Default)]
 pub struct Plugin {
     pub state: Rc<RefCell<State>>,
+    pub config: Config,
 }
 
 impl Plugin {
     pub fn init(&mut self, config: Config) -> Result<()> {
+        self.config = config;
+
         let (sender, mut receiver) = mpsc::unbounded_channel::<twitch::CommandPayload>();
 
         let plugin = self.clone();
 
         let handle = AsyncHandle::new(move || {
-            let payload = receiver.blocking_recv().expect("Payload receiving error");
-            plugin.handle_payload(payload);
+            let payload = receiver.blocking_recv();
+
+            if let Some(payload) = payload {
+                plugin.handle_payload(payload);
+            } else {
+                schedule(move |()| {
+                    Plugin::err("[nvim-chaos] Payload receiving error");
+                });
+            }
         })?;
+
+        let config = self.config.clone();
 
         if config.channel.is_some() {
             thread::spawn(move || {
-                twitch::init(handle, sender, config).unwrap_or_else(|e| {
-                    println!("{e}");
+                twitch::init(handle, sender, config).unwrap_or_else(|error| {
+                    schedule(move |()| {
+                        Plugin::err(&format!("[nvim-chaos] {error}"));
+                    });
                 });
             });
 
@@ -81,11 +95,19 @@ impl Plugin {
                     background,
                 }
                 .into();
-                self.set_mode(mode, ModeType::ColorSchemeType, 5 * 60)?;
+                self.set_mode(
+                    mode,
+                    ModeType::ColorSchemeType,
+                    self.config.commands.colorscheme.duration,
+                )?;
             }
             twitch::Command::VimMotionsHell => {
                 let mode: Mode = VimMotionsHellCommand {}.into();
-                self.set_mode(mode, ModeType::VimMotionsHellType, 60)?;
+                self.set_mode(
+                    mode,
+                    ModeType::VimMotionsHellType,
+                    self.config.commands.hell.duration,
+                )?;
             }
         }
 

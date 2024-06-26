@@ -53,7 +53,7 @@ pub async fn init(
                 if let Some((command, argument1)) = command.zip(argument1) {
                     let argument2 = argument2.unwrap_or("");
 
-                    if command == config.commands.colorscheme {
+                    if command == config.commands.colorscheme.name {
                         sender
                             .send(CommandPayload {
                                 command: Command::ColorScheme(
@@ -68,7 +68,7 @@ pub async fn init(
                 }
 
                 if let Some(command) = command {
-                    if command == config.commands.hell {
+                    if command == config.commands.hell.name {
                         sender
                             .send(CommandPayload {
                                 command: Command::VimMotionsHell,

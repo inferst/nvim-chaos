@@ -45,8 +45,16 @@ chaos.setup {
     channel = 'your_twitch_channel', -- set your twitch channel here
     commands = {
       message = '!msg', -- name of message command
-      colorscheme = '!colorscheme', -- first argument is colorscheme name, second argument is background (dark, light)
-      hell = '!vimhell', -- name of vim motions hell command
+      colorscheme = {
+        -- First argument is colorscheme name.
+        -- Second argument is background (dark, light).
+        name = '!colorscheme',
+        duration = 60 * 5,
+      },
+      hell = {
+        name = '!vimhell',
+        duration = 60,
+      }
     },
 }
 ```
