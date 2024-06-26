@@ -7,7 +7,7 @@ use thiserror::Error as ThisError;
 
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
-pub struct CommmandConfig {
+pub struct Commmands {
     #[serde(default)]
     pub message: String,
 
@@ -18,9 +18,9 @@ pub struct CommmandConfig {
     pub hell: String,
 }
 
-impl Default for CommmandConfig {
+impl Default for Commmands {
     fn default() -> Self {
-        CommmandConfig {
+        Commmands {
             message: "!msg".to_owned(),
             colorscheme: "!colorscheme".to_owned(),
             hell: "!vimhell".to_owned(),
@@ -35,7 +35,7 @@ pub struct Config {
     pub channel: Option<String>,
 
     #[serde(default)]
-    pub commands: CommmandConfig,
+    pub commands: Commmands,
 }
 
 #[derive(Debug, ThisError)]
@@ -51,7 +51,7 @@ pub enum Error {
 impl From<serde_path_to_error::Error<DeserializeError>> for Error {
     fn from(err: serde_path_to_error::Error<DeserializeError>) -> Self {
         Self::BadConfig {
-            prefix: "".into(),
+            prefix: String::new(),
             option: err.path().to_owned(),
             why: err.into_inner().to_string(),
         }
@@ -62,13 +62,11 @@ impl TryFrom<Object> for Config {
     type Error = Error;
 
     fn try_from(preferences: Object) -> Result<Self, Self::Error> {
-        match preferences.kind() {
-            ObjectKind::Nil => Ok(Self::default()),
-
-            _ => {
-                let deserializer = Deserializer::new(preferences);
-                serde_path_to_error::deserialize::<_, Self>(deserializer).map_err(Into::into)
-            }
+        if let ObjectKind::Nil = preferences.kind() {
+            Ok(Self::default())
+        } else {
+            let deserializer = Deserializer::new(preferences);
+            serde_path_to_error::deserialize::<_, Self>(deserializer).map_err(Into::into)
         }
     }
 }

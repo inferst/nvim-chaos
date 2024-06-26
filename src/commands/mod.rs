@@ -1,7 +1,7 @@
-pub(crate) use color_scheme::{Background, ColorSchemeCommand};
+pub(crate) use color_scheme::{Background, Command as ColorSchemeCommand};
 use enum_dispatch::enum_dispatch;
 use nvim_oxi::Result;
-pub use vim_motions_hell::VimMotionsHellCommand;
+pub(crate) use vim_motions_hell::Command as VimMotionsHellCommand;
 
 mod color_scheme;
 mod vim_motions_hell;
@@ -18,7 +18,7 @@ pub trait ModeCommand {
 }
 
 #[enum_dispatch]
-#[derive(PartialEq, Clone, Debug, strum::Display)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Mode {
     VimMotionsHellCommand,
 

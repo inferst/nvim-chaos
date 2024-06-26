@@ -18,13 +18,13 @@ pub struct ModeState {
 }
 
 #[derive(Clone)]
-pub struct ChaosModeState {
+pub struct State {
     pub buf: Buffer,
     pub win: Option<Window>,
     pub commands: Vec<ModeState>,
 }
 
-impl Default for ChaosModeState {
+impl Default for State {
     fn default() -> Self {
         Self {
             buf: 0.into(),
@@ -34,21 +34,9 @@ impl Default for ChaosModeState {
     }
 }
 
-impl ChaosModeState {
+impl State {
     pub fn init(&mut self) -> Result<()> {
         self.buf = api::create_buf(false, true)?;
-
-        Ok(())
-    }
-
-    fn stop_command(&self, mode: &Mode) -> Result<()> {
-        mode.stop()?;
-
-        Ok(())
-    }
-
-    fn start_command(&self, mode: &Mode) -> Result<()> {
-        mode.start()?;
 
         Ok(())
     }
@@ -57,7 +45,7 @@ impl ChaosModeState {
         if mode.is_valid()? {
             self.commands.retain(|x| x.mode_type != mode_type);
 
-            self.start_command(&mode)?;
+            mode.start()?;
             self.commands.push(ModeState {
                 mode,
                 mode_type,
@@ -75,7 +63,7 @@ impl ChaosModeState {
 
         for command in commands {
             if command.seconds == 0 {
-                self.stop_command(&command.mode)?;
+                command.mode.stop()?;
             }
         }
 

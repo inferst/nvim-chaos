@@ -5,24 +5,24 @@ use twitch_irc::{
     TwitchIRCClient,
 };
 
-use crate::plugin::config::Config;
+use crate::core::config::Config;
 
 #[derive(Debug)]
-pub enum TwitchCommand {
+pub enum Command {
     Message(String, String),
     ColorScheme(String, String),
     VimMotionsHell,
 }
 
 #[derive(Debug)]
-pub struct TwitchCommandPayload {
-    pub command: TwitchCommand,
+pub struct CommandPayload {
+    pub command: Command,
 }
 
 #[tokio::main(flavor = "current_thread")]
 pub async fn init(
     handle: AsyncHandle,
-    sender: UnboundedSender<TwitchCommandPayload>,
+    sender: UnboundedSender<CommandPayload>,
     config: Config,
 ) -> Result<()> {
     let client_config = ClientConfig::default();
@@ -41,11 +41,8 @@ pub async fn init(
                 if let Some((command, argument)) = command.zip(argument1) {
                     if command == config.commands.message {
                         sender
-                            .send(TwitchCommandPayload {
-                                command: TwitchCommand::Message(
-                                    msg.sender.name,
-                                    argument.to_owned(),
-                                ),
+                            .send(CommandPayload {
+                                command: Command::Message(msg.sender.name, argument.to_owned()),
                             })
                             .unwrap();
 
@@ -58,8 +55,8 @@ pub async fn init(
 
                     if command == config.commands.colorscheme {
                         sender
-                            .send(TwitchCommandPayload {
-                                command: TwitchCommand::ColorScheme(
+                            .send(CommandPayload {
+                                command: Command::ColorScheme(
                                     argument1.to_owned(),
                                     argument2.to_owned(),
                                 ),
@@ -73,8 +70,8 @@ pub async fn init(
                 if let Some(command) = command {
                     if command == config.commands.hell {
                         sender
-                            .send(TwitchCommandPayload {
-                                command: TwitchCommand::VimMotionsHell,
+                            .send(CommandPayload {
+                                command: Command::VimMotionsHell,
                             })
                             .unwrap();
 

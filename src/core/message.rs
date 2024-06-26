@@ -9,12 +9,12 @@ use nvim_oxi::{
 };
 
 #[derive(Clone)]
-pub struct MessageState {
+pub struct State {
     pub win: Option<Window>,
     pub buf: Buffer,
 }
 
-impl Default for MessageState {
+impl Default for State {
     fn default() -> Self {
         Self {
             buf: 0.into(),
@@ -23,7 +23,7 @@ impl Default for MessageState {
     }
 }
 
-impl MessageState {
+impl State {
     pub fn init(&mut self) -> Result<()> {
         self.buf = api::create_buf(false, true)?;
 

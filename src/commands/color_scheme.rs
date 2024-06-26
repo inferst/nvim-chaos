@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::str::FromStr;
 
 use nvim_oxi as nvim;
@@ -29,23 +30,25 @@ impl FromStr for Background {
     }
 }
 
-impl ToString for Background {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for Background {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let string = match self {
             Background::Dark => String::from("dark"),
             Background::Light => String::from("light"),
-            Background::Default => String::from(""),
-        }
+            Background::Default => String::new(),
+        };
+
+        write!(f, "{string}")
     }
 }
 
 #[derive(Default, PartialEq, Clone, Debug)]
-pub struct ColorSchemeCommand {
+pub struct Command {
     pub colorscheme: String,
     pub background: Background,
 }
 
-impl ModeCommand for ColorSchemeCommand {
+impl ModeCommand for Command {
     fn start(&self) -> nvim::Result<()> {
         let mut command = String::from("colorscheme ");
         let mut cmd = command.clone();
@@ -61,7 +64,7 @@ impl ModeCommand for ColorSchemeCommand {
             api::command(&cmd)?;
 
             if self.background != Background::Default {
-                api::command(&format!("set background={}", self.background.to_string()))?;
+                api::command(&format!("set background={}", self.background))?;
             }
         }
 
@@ -71,7 +74,7 @@ impl ModeCommand for ColorSchemeCommand {
     fn is_valid(&self) -> nvim::Result<bool> {
         let schemes: Array = api::call_function("getcompletion", Array::from_iter(["", "color"]))?;
 
-        for scheme in schemes.into_iter() {
+        for scheme in schemes {
             unsafe {
                 if scheme.into_string_unchecked() == self.colorscheme {
                     return Ok(true);

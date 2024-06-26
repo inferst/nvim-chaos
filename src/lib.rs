@@ -1,10 +1,10 @@
 use nvim_oxi::{Dictionary, Result};
 
 mod commands;
-mod plugin;
+mod core;
 mod twitch;
 
-use plugin::Plugin;
+use crate::core::plugin::Plugin;
 
 /// # Panics
 ///
@@ -15,7 +15,7 @@ use plugin::Plugin;
 #[nvim_oxi::plugin]
 pub fn nvim_chaos() -> Result<Dictionary> {
     let mut plugin = Plugin::default();
-    let api = plugin.build_api()?;
+    let api = plugin.build_api();
 
     Ok(api)
 }

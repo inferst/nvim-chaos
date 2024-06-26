@@ -3,9 +3,9 @@ use nvim_oxi::{api, Result};
 use super::ModeCommand;
 
 #[derive(Default, PartialEq, Clone, Debug)]
-pub struct VimMotionsHellCommand {}
+pub struct Command {}
 
-impl ModeCommand for VimMotionsHellCommand {
+impl ModeCommand for Command {
     fn start(&self) -> Result<()> {
         api::command("noremap l h")?;
         api::command("noremap k j")?;

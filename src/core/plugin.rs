@@ -10,15 +10,19 @@ use tokio::sync::mpsc;
 
 use crate::{
     commands::{Background, ColorSchemeCommand, Mode, ModeType, VimMotionsHellCommand},
-    twitch::{self, TwitchCommand, TwitchCommandPayload},
+    twitch::{self},
 };
 
-use super::{chaos_mode::ChaosModeState, config::Config, message::MessageState};
+use super::{
+    chaos_mode::{self},
+    config::Config,
+    message::{self},
+};
 
 #[derive(Clone, Default)]
 pub struct State {
-    pub message: MessageState,
-    pub chaos_mode: ChaosModeState,
+    pub message: message::State,
+    pub chaos_mode: chaos_mode::State,
 }
 
 #[derive(Clone, Default)]
@@ -28,7 +32,7 @@ pub struct Plugin {
 
 impl Plugin {
     pub fn init(&mut self, config: Config) -> Result<()> {
-        let (sender, mut receiver) = mpsc::unbounded_channel::<TwitchCommandPayload>();
+        let (sender, mut receiver) = mpsc::unbounded_channel::<twitch::CommandPayload>();
 
         let plugin = self.clone();
 
@@ -55,23 +59,22 @@ impl Plugin {
         Ok(())
     }
 
-    fn handle_payload(&self, payload: TwitchCommandPayload) {
+    fn handle_payload(&self, payload: twitch::CommandPayload) {
         let mut plugin = self.clone();
 
-        schedule(move |()| match plugin.parse_command(payload.command) {
-            Err(error) => {
-                Plugin::err(&format!("[nvim-chaos] {}", error));
+        schedule(move |()| {
+            if let Err(error) = plugin.parse_command(payload.command) {
+                Plugin::err(&format!("[nvim-chaos] {error}"));
             }
-            _ => {}
         });
     }
 
-    fn parse_command(&mut self, command: TwitchCommand) -> Result<()> {
+    fn parse_command(&mut self, command: twitch::Command) -> Result<()> {
         match command {
-            TwitchCommand::Message(author, text) => {
+            twitch::Command::Message(author, text) => {
                 self.show_msg(author.as_str(), text.as_str())?;
             }
-            TwitchCommand::ColorScheme(colorscheme, background) => {
+            twitch::Command::ColorScheme(colorscheme, background) => {
                 let background = Background::from_str(&background).unwrap();
                 let mode: Mode = ColorSchemeCommand {
                     colorscheme,
@@ -80,7 +83,7 @@ impl Plugin {
                 .into();
                 self.set_mode(mode, ModeType::ColorSchemeType, 5 * 60)?;
             }
-            TwitchCommand::VimMotionsHell => {
+            twitch::Command::VimMotionsHell => {
                 let mode: Mode = VimMotionsHellCommand {}.into();
                 self.set_mode(mode, ModeType::VimMotionsHellType, 60)?;
             }
@@ -101,14 +104,14 @@ impl Plugin {
                 let chunks = [
                     ("[nvim-chaos]", Some("NvimChaosErrTag")),
                     (" ", None),
-                    (&format!("{}", error), None),
+                    (&format!("{error}"), None),
                 ];
                 let _ = api::echo(chunks, true, &opts);
             }
         }
     }
 
-    pub fn build_api(&mut self) -> Result<Dictionary> {
+    pub fn build_api(&mut self) -> nvim_oxi::Dictionary {
         let plugin = self.clone();
 
         let setup = Function::from_fn(move |preferences: Object| {
@@ -116,9 +119,7 @@ impl Plugin {
             plugin.parse_config(preferences);
         });
 
-        let api = Dictionary::from_iter([("setup", setup)]);
-
-        Ok(api)
+        Dictionary::from_iter([("setup", setup)])
     }
 
     pub fn err(str: &str) {
