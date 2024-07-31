@@ -1,3 +1,4 @@
+use std::sync::OnceLock;
 use std::{cell::RefCell, rc::Rc, str::FromStr, thread, time::Duration};
 
 use nvim_oxi::{
@@ -19,6 +20,8 @@ use super::{
     message::{self},
 };
 
+pub static CONFIG: OnceLock<Config> = OnceLock::new();
+
 #[derive(Clone, Default)]
 pub struct State {
     pub message: message::State,
@@ -28,12 +31,11 @@ pub struct State {
 #[derive(Clone, Default)]
 pub struct Plugin {
     pub state: Rc<RefCell<State>>,
-    pub config: Config,
 }
 
 impl Plugin {
-    pub fn init(&mut self, config: Config) -> Result<()> {
-        self.config = config;
+    pub fn init(&mut self) -> Result<()> {
+        let config = CONFIG.get().unwrap();
 
         let (sender, mut receiver) = mpsc::unbounded_channel::<twitch::CommandPayload>();
 
@@ -51,7 +53,7 @@ impl Plugin {
             }
         })?;
 
-        let config = self.config.clone();
+        let config = config.clone();
 
         if config.channel.is_some() {
             thread::spawn(move || {
@@ -84,6 +86,8 @@ impl Plugin {
     }
 
     fn parse_command(&mut self, command: twitch::Command) -> Result<()> {
+        let config = CONFIG.get().unwrap();
+
         match command {
             twitch::Command::Message(author, text) => {
                 self.show_msg(author.as_str(), text.as_str())?;
@@ -98,7 +102,7 @@ impl Plugin {
                 self.set_mode(
                     mode,
                     ModeType::ColorSchemeType,
-                    self.config.commands.colorscheme.duration,
+                    config.commands.colorscheme.duration,
                 )?;
             }
             twitch::Command::VimMotionsHell => {
@@ -106,7 +110,7 @@ impl Plugin {
                 self.set_mode(
                     mode,
                     ModeType::VimMotionsHellType,
-                    self.config.commands.hell.duration,
+                    config.commands.hell.duration,
                 )?;
             }
         }
@@ -119,7 +123,8 @@ impl Plugin {
 
         match config {
             Ok(config) => {
-                self.init(config).unwrap();
+                CONFIG.set(config).unwrap();
+                self.init().unwrap();
             }
             Err(error) => {
                 let opts = EchoOpts::builder().build();

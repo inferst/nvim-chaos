@@ -126,7 +126,12 @@ impl State {
 
         let height: u32 = lines.len().try_into().unwrap();
 
-        self.buf.set_lines(0..lines.len(), false, lines)?;
+        // VIM E565
+        // For some cases there will be an error if we tried to set lines in buffer
+        // This is COSTYLE
+        self.buf
+            .set_lines(0..lines.len(), false, lines)
+            .unwrap_or(());
 
         self.open_win(width, height)?;
 

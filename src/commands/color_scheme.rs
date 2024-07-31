@@ -8,6 +8,8 @@ use nvim_oxi::{
     Array,
 };
 
+use crate::core::plugin::CONFIG;
+
 use super::ModeCommand;
 
 #[derive(Default, Debug, Clone, PartialEq)]
@@ -86,7 +88,10 @@ impl ModeCommand for Command {
     }
 
     fn stop(&self) -> nvim::Result<()> {
-        api::command("colorscheme vscode")?;
+        let config = CONFIG.get().unwrap();
+        let scheme = config.commands.colorscheme.clone().default;
+
+        api::command(&format!("colorscheme {scheme}"))?;
         api::command("set background=dark")?;
 
         Ok(())
