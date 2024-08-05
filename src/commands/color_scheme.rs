@@ -89,10 +89,12 @@ impl ModeCommand for Command {
 
     fn stop(&self) -> nvim::Result<()> {
         let config = CONFIG.get().unwrap();
-        let scheme = config.commands.colorscheme.clone().default;
+        let colorscheme = config.commands.colorscheme.clone();
+        let scheme = colorscheme.default;
+        let background = colorscheme.background;
 
         api::command(&format!("colorscheme {scheme}"))?;
-        api::command("set background=dark")?;
+        api::command(&format!("set background={background}"))?;
 
         Ok(())
     }

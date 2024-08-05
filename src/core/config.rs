@@ -14,6 +14,8 @@ pub struct ColorSchemeCommand {
     pub duration: u32,
     #[serde(default = "default_colorscheme_name")]
     pub default: String,
+    #[serde(default = "default_background")]
+    pub background: String,
 }
 
 fn default_colorscheme_command_name() -> String {
@@ -30,12 +32,17 @@ fn default_colorscheme_name() -> String {
     scheme.to_string()
 }
 
+fn default_background() -> String {
+    String::from("dark")
+}
+
 impl Default for ColorSchemeCommand {
     fn default() -> Self {
         ColorSchemeCommand {
             name: default_colorscheme_command_name(),
             duration: default_colorscheme_command_duration(),
             default: default_colorscheme_name(),
+            background: default_background(),
         }
     }
 }
