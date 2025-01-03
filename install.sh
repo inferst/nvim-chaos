@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
+# Add -x for debug
 set -e
 
 # The root of the project.
 PRJ_ROOT="${PRJ_ROOT:-$(git rev-parse --show-toplevel)}"
 
 # Whether to build a debug or release version of the project.
-PROFILE="${1:-debug}"
+PROFILE="${1:-release}"
 
 if [ $PROFILE != "debug" ] && [ $PROFILE != "release" ]; then
   echo "Invalid profile \"$PROFILE\": profile should either be \"debug\" or \"release\""
