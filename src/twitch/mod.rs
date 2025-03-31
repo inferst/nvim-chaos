@@ -12,6 +12,7 @@ pub enum Command {
     Message(String, String),
     ColorScheme(String, String),
     VimMotionsHell,
+    CursorLine,
 }
 
 #[derive(Debug)]
@@ -72,6 +73,15 @@ pub async fn init(
                         sender
                             .send(CommandPayload {
                                 command: Command::VimMotionsHell,
+                            })
+                            .unwrap();
+
+                        handle.send().unwrap();
+                    }
+                    if command == config.commands.cursorline.name {
+                        sender
+                            .send(CommandPayload {
+                                command: Command::CursorLine,
                             })
                             .unwrap();
 

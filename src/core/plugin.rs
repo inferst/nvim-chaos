@@ -10,7 +10,7 @@ use nvim_oxi::{
 use tokio::sync::mpsc;
 
 use crate::{
-    commands::{Background, ColorSchemeCommand, Mode, ModeType, VimMotionsHellCommand},
+    commands::{Background, ColorSchemeCommand, Mode, ModeType, VimMotionsHellCommand, CursorLineCommand},
     twitch::{self},
 };
 
@@ -111,6 +111,14 @@ impl Plugin {
                     mode,
                     ModeType::VimMotionsHellType,
                     config.commands.hell.duration,
+                )?;
+            }
+            twitch::Command::CursorLine => {
+                let mode: Mode = CursorLineCommand {}.into();
+                self.set_mode(
+                    mode,
+                    ModeType::CursorLineType,
+                    config.commands.cursorline.duration,
                 )?;
             }
         }
