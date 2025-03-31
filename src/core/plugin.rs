@@ -17,14 +17,12 @@ use crate::{
 use super::{
     chaos_mode::{self},
     config::Config,
-    message::{self},
 };
 
 pub static CONFIG: OnceLock<Config> = OnceLock::new();
 
 #[derive(Clone, Default)]
 pub struct State {
-    pub message: message::State,
     pub chaos_mode: chaos_mode::State,
 }
 
@@ -69,7 +67,6 @@ impl Plugin {
             let mut state = self.state.borrow_mut();
 
             state.chaos_mode.init()?;
-            state.message.init()?;
         }
 
         Ok(())
@@ -90,7 +87,7 @@ impl Plugin {
 
         match command {
             twitch::Command::Message(author, text) => {
-                self.show_msg(author.as_str(), text.as_str())?;
+                Plugin::show_msg(author.as_str(), text.as_str())?;
             }
             twitch::Command::ColorScheme(colorscheme, background) => {
                 let background = Background::from_str(&background).unwrap();
@@ -183,9 +180,12 @@ impl Plugin {
         Ok(())
     }
 
-    pub fn show_msg(&mut self, author: &str, message: &str) -> Result<()> {
-        let mut state = self.state.borrow_mut();
-        state.message.show_msg(author, message)?;
+    pub fn show_msg(author: &str, message: &str) -> Result<()> {
+        let mut option_opts = Dictionary::new();
+        option_opts.insert("title", author);
+        option_opts.insert("timeout", 10000);
+
+        api::notify(message, api::types::LogLevel::Info, &option_opts)?;
 
         Ok(())
     }

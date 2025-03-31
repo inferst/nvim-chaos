@@ -8,7 +8,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 enum_dispatch = "0.3.13"
-nvim-oxi = { version = "0.5.1", features = [ "neovim-0-10", "test", "libuv", ]}
+nvim-oxi = { git = "https://github.com/noib3/nvim-oxi", rev="dc13af07e2b200d23a98f2a8401d2bed6b5524f3", features = [ "neovim-nightly", "test", "libuv", ]}
 serde = { version = "1.0.203", features = ["derive"] }
 serde_path_to_error = "0.1.16"
 thiserror = "1.0.61"

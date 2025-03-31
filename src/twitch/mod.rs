@@ -39,10 +39,15 @@ pub async fn init(
                 let argument2 = split.next();
 
                 if let Some((command, argument)) = command.zip(argument1) {
+                    let argument2 = argument2.unwrap_or("");
+
                     if command == config.commands.message {
                         sender
                             .send(CommandPayload {
-                                command: Command::Message(msg.sender.name, argument.to_owned()),
+                                command: Command::Message(
+                                    msg.sender.name,
+                                    format!("{argument} {argument2}"),
+                                ),
                             })
                             .unwrap();
 
