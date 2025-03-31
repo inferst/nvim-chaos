@@ -66,10 +66,6 @@ impl ModeCommand for Command {
             cmd.push_str(arg);
             api::command(&cmd)?;
 
-            // Some default vim color schemes have ugly background for floating windows
-            let highlight_opts = SetHighlightOptsBuilder::default().link("Float").build();
-            api::set_hl(0, "NormalFloat", &highlight_opts)?;
-
             if self.background != Background::Default {
                 api::command(&format!("set background={}", self.background))?;
             }
