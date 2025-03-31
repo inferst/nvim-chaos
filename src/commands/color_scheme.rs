@@ -2,7 +2,6 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 use nvim_oxi as nvim;
-use nvim_oxi::api::opts::SetHighlightOptsBuilder;
 
 use nvim_oxi::{
     api::{self, opts::ParseCmdOpts},
