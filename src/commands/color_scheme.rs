@@ -1,7 +1,8 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use nvim_oxi as nvim;
+use nvim_oxi::api::opts::SetHighlightOptsBuilder;
+use nvim_oxi::{self as nvim, schedule};
 
 use nvim_oxi::{
     api::{self, opts::ParseCmdOpts},
@@ -64,6 +65,12 @@ impl ModeCommand for Command {
         if let Some(arg) = arg {
             cmd.push_str(arg);
             api::command(&cmd)?;
+
+            // Some default vim color schemes have ugly background for floating windows
+            schedule(move |()| {
+                let highlight_opts = SetHighlightOptsBuilder::default().link("Float").build();
+                api::set_hl(0, "NormalFloat", &highlight_opts).unwrap();
+            });
 
             if self.background != Background::Default {
                 api::command(&format!("set background={}", self.background))?;
