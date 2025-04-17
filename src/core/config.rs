@@ -49,6 +49,32 @@ impl Default for ColorSchemeCommand {
 
 #[derive(Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+pub struct CursorLineCommand {
+    #[serde(default = "default_cursorline_command_name")]
+    pub name: String,
+    #[serde(default = "default_cursorline_command_duration")]
+    pub duration: u32,
+}
+
+fn default_cursorline_command_name() -> String {
+    String::from("!cursorline")
+}
+
+fn default_cursorline_command_duration() -> u32 {
+    60
+}
+
+impl Default for CursorLineCommand {
+    fn default() -> Self {
+        CursorLineCommand {
+            name: default_cursorline_command_name(),
+            duration: default_cursorline_command_duration(),
+        }
+    }
+}
+
+#[derive(Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
 pub struct VimMotionsHellCommand {
     #[serde(default = "default_vimhell_command_name")]
     pub name: String,
@@ -84,6 +110,9 @@ pub struct Commmands {
 
     #[serde(default)]
     pub hell: VimMotionsHellCommand,
+
+    #[serde(default)]
+    pub cursorline: CursorLineCommand,
 }
 
 fn default_message_command_name() -> String {
@@ -96,6 +125,7 @@ impl Default for Commmands {
             message: default_message_command_name(),
             colorscheme: ColorSchemeCommand::default(),
             hell: VimMotionsHellCommand::default(),
+            cursorline: CursorLineCommand::default(),
         }
     }
 }
