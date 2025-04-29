@@ -1,3 +1,4 @@
+use std::io::Cursor;
 use std::sync::OnceLock;
 use std::{cell::RefCell, rc::Rc, str::FromStr, thread, time::Duration};
 
@@ -7,6 +8,7 @@ use nvim_oxi::{
     schedule, Dictionary, Function, Object, Result,
 };
 
+use rodio::Decoder;
 use tokio::sync::mpsc;
 
 use crate::{
@@ -87,7 +89,7 @@ impl Plugin {
 
         match command {
             twitch::Command::Message(author, text) => {
-                Plugin::show_msg(author.as_str(), text.as_str())?;
+                Plugin::show_msg(author.as_str(), text.as_str());
             }
             twitch::Command::ColorScheme(colorscheme, background) => {
                 let background = Background::from_str(&background).unwrap();
@@ -180,13 +182,65 @@ impl Plugin {
         Ok(())
     }
 
-    pub fn show_msg(author: &str, message: &str) -> Result<()> {
+    pub fn show_msg(author: &str, message: &str) {
         let mut option_opts = Dictionary::new();
+
         option_opts.insert("title", author);
-        option_opts.insert("timeout", 10000);
+        option_opts.insert("timeout", 20000);
 
-        api::notify(message, api::types::LogLevel::Info, &option_opts)?;
+        let message = wrap_text(message, 40);
 
-        Ok(())
+        schedule(move |()| {
+            api::notify(&message, api::types::LogLevel::Off, &option_opts).unwrap();
+        });
+
+        let _ = thread::spawn(move || {
+            let stream = rodio::OutputStream::try_default();
+
+            match stream {
+                Ok((_stream, stream_handle)) => {
+                    let data = include_bytes!("../../audio/icq.mp4");
+                    let buff = Cursor::new(data);
+                    let source = Decoder::new(buff);
+
+                    match source {
+                        Ok(source) => {
+                            let sink = rodio::Sink::try_new(&stream_handle).unwrap();
+
+                            sink.set_volume(0.1);
+                            sink.append(source);
+                            sink.sleep_until_end();
+                        }
+                        Err(err) => {
+                            Plugin::err(&format!("[nvim-chaos] {err}"));
+                        }
+                    }
+                }
+                Err(err) => {
+                    Plugin::err(&format!("[nvim-chaos] {err}"));
+                }
+            }
+        });
     }
+}
+
+fn wrap_text(input: &str, max_len: usize) -> String {
+    let mut result = String::new();
+    let mut line_len = 0;
+
+    for word in input.split_whitespace() {
+        if line_len + word.len() + usize::from(line_len > 0) > max_len {
+            result.push_str(&format!("\n{word}"));
+            line_len = word.len();
+        } else {
+            if line_len > 0 {
+                result.push(' ');
+                line_len += 1;
+            }
+            result.push_str(word);
+            line_len += word.len();
+        }
+    }
+
+    result
 }

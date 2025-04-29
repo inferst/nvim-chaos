@@ -14,6 +14,7 @@ serde_path_to_error = "0.1.16"
 thiserror = "1.0.61"
 tokio = "1.38.0"
 twitch-irc = "5.0.1"
+rodio = { version = "0.20.1", features = ["symphonia-all"]}
 
 [target.x86_64-apple-darwin]
 rustflags = [

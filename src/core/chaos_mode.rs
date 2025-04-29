@@ -147,8 +147,7 @@ impl State {
     }
 
     pub fn open_win(&mut self, width: u32, height: u32) -> Result<()> {
-        let title = WindowTitle::SimpleString(nvim_oxi::String::from("Chaos Neovim"));
-        let title_pos = WindowTitlePosition::Center;
+        let title = WindowTitle::SimpleString(nvim_oxi::String::from(" Chaos Neovim "));
 
         let opts = OptionOpts::builder()
             .scope(api::opts::OptionScope::Global)
@@ -156,15 +155,16 @@ impl State {
 
         let cols = api::get_option_value::<u32>("columns", &opts)?;
 
-        let x = cols - 4 - width;
-        let y = 1;
+        let x = cols - 1;
+        let y = 0;
 
         let config = WindowConfig::builder()
             .relative(WindowRelativeTo::Editor)
             .border(nvim_oxi::api::types::WindowBorder::Rounded)
             .style(nvim_oxi::api::types::WindowStyle::Minimal)
+            .title_pos(WindowTitlePosition::Center)
             .title(title)
-            .title_pos(title_pos)
+            .anchor(api::types::WindowAnchor::NorthEast)
             .width(width)
             .height(height)
             .col(x)
