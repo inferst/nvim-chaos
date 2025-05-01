@@ -1,4 +1,6 @@
-use nvim_oxi::{api, Result};
+use nvim_oxi::api;
+
+use crate::error::Result;
 
 use super::ModeCommand;
 

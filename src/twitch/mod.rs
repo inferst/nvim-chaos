@@ -1,9 +1,11 @@
-use nvim_oxi::{libuv::AsyncHandle, Result};
+use nvim_oxi::libuv::AsyncHandle;
 use tokio::sync::mpsc::UnboundedSender;
 use twitch_irc::{
     login::StaticLoginCredentials, message::ServerMessage, ClientConfig, SecureTCPTransport,
     TwitchIRCClient,
 };
+
+use crate::error::Result;
 
 use crate::core::config::Config;
 

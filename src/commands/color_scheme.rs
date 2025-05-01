@@ -2,7 +2,7 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 use nvim_oxi::api::opts::SetHighlightOptsBuilder;
-use nvim_oxi::{self as nvim, schedule};
+use nvim_oxi::schedule;
 
 use nvim_oxi::{
     api::{self, opts::ParseCmdOpts},
@@ -12,6 +12,8 @@ use nvim_oxi::{
 use crate::core::plugin::CONFIG;
 
 use super::ModeCommand;
+
+use crate::error::Result;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub(crate) enum Background {
@@ -24,7 +26,7 @@ pub(crate) enum Background {
 impl FromStr for Background {
     type Err = ();
 
-    fn from_str(value: &str) -> Result<Self, ()> {
+    fn from_str(value: &str) -> core::result::Result<Self, ()> {
         match value {
             "dark" => Ok(Background::Dark),
             "light" => Ok(Background::Light),
@@ -52,7 +54,7 @@ pub struct Command {
 }
 
 impl ModeCommand for Command {
-    fn start(&self) -> nvim::Result<()> {
+    fn start(&self) -> Result<()> {
         let mut command = String::from("colorscheme ");
         let mut cmd = command.clone();
         command.push_str(&self.colorscheme);
@@ -80,7 +82,7 @@ impl ModeCommand for Command {
         Ok(())
     }
 
-    fn is_valid(&self) -> nvim::Result<bool> {
+    fn is_valid(&self) -> Result<bool> {
         let schemes: Array = api::call_function("getcompletion", Array::from_iter(["", "color"]))?;
 
         for scheme in schemes {
@@ -94,7 +96,7 @@ impl ModeCommand for Command {
         Ok(false)
     }
 
-    fn stop(&self) -> nvim::Result<()> {
+    fn stop(&self) -> Result<()> {
         let config = CONFIG.get().unwrap();
         let colorscheme = config.commands.colorscheme.clone();
         let scheme = colorscheme.default;

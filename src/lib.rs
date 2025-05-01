@@ -3,6 +3,7 @@ use nvim_oxi::{Dictionary, Result};
 mod commands;
 mod core;
 mod twitch;
+mod error;
 
 use crate::core::plugin::Plugin;
 
