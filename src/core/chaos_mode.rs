@@ -1,14 +1,13 @@
-use nvim_oxi::{
-    api::{
-        self,
-        opts::OptionOpts,
-        types::{WindowConfig, WindowRelativeTo, WindowTitle, WindowTitlePosition},
-        Buffer, Window,
-    },
-    Result,
+use nvim_oxi::api::{
+    self,
+    opts::OptionOpts,
+    types::{WindowConfig, WindowRelativeTo, WindowTitle, WindowTitlePosition},
+    Buffer, Window,
 };
 
 use crate::commands::{Mode, ModeCommand, ModeType};
+
+use crate::error::Result;
 
 #[derive(Clone)]
 pub struct ModeState {
@@ -128,7 +127,6 @@ impl State {
 
         // VIM E565
         // For some cases there will be an error if we tried to set lines in buffer
-        // This is COSTYLE
         self.buf
             .set_lines(0..lines.len(), false, lines)
             .unwrap_or(());

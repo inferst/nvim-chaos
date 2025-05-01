@@ -1,9 +1,7 @@
-use nvim_oxi::{
-    serde::{DeserializeError, Deserializer},
-    Object, ObjectKind,
-};
+use crate::core::config::error::Error;
+
+use nvim_oxi::{serde::Deserializer, Object, ObjectKind};
 use serde::Deserialize;
-use thiserror::Error as ThisError;
 
 #[derive(Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -75,7 +73,7 @@ impl Default for VimMotionsHellCommand {
 
 #[derive(Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
-pub struct Commmands {
+pub struct Commands {
     #[serde(default = "default_message_command_name")]
     pub message: String,
 
@@ -90,9 +88,9 @@ fn default_message_command_name() -> String {
     String::from("!msg")
 }
 
-impl Default for Commmands {
+impl Default for Commands {
     fn default() -> Self {
-        Commmands {
+        Commands {
             message: default_message_command_name(),
             colorscheme: ColorSchemeCommand::default(),
             hell: VimMotionsHellCommand::default(),
@@ -107,27 +105,7 @@ pub struct Config {
     pub channel: Option<String>,
 
     #[serde(default)]
-    pub commands: Commmands,
-}
-
-#[derive(Debug, ThisError)]
-pub enum Error {
-    #[error("error parsing `{prefix}{option}`: {why}")]
-    BadConfig {
-        prefix: String,
-        option: serde_path_to_error::Path,
-        why: String,
-    },
-}
-
-impl From<serde_path_to_error::Error<DeserializeError>> for Error {
-    fn from(err: serde_path_to_error::Error<DeserializeError>) -> Self {
-        Self::BadConfig {
-            prefix: String::new(),
-            option: err.path().to_owned(),
-            why: err.into_inner().to_string(),
-        }
-    }
+    pub commands: Commands,
 }
 
 impl TryFrom<Object> for Config {

@@ -1,6 +1,6 @@
+use crate::error::Result;
 pub(crate) use color_scheme::{Background, Command as ColorSchemeCommand};
 use enum_dispatch::enum_dispatch;
-use nvim_oxi::Result;
 pub(crate) use vim_motions_hell::Command as VimMotionsHellCommand;
 
 mod color_scheme;

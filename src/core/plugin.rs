@@ -5,7 +5,7 @@ use std::{cell::RefCell, rc::Rc, str::FromStr, thread, time::Duration};
 use nvim_oxi::{
     api::{self, opts::EchoOpts},
     libuv::{AsyncHandle, TimerHandle},
-    schedule, Dictionary, Function, Object, Result,
+    schedule, Dictionary, Function, Object,
 };
 
 use rodio::Decoder;
@@ -20,6 +20,8 @@ use super::{
     chaos_mode::{self},
     config::Config,
 };
+
+use crate::error::Result;
 
 pub static CONFIG: OnceLock<Config> = OnceLock::new();
 
@@ -48,7 +50,7 @@ impl Plugin {
                 plugin.handle_payload(payload);
             } else {
                 schedule(move |()| {
-                    Plugin::err("[nvim-chaos] Payload receiving error");
+                    Plugin::err("Payload receiving error");
                 });
             }
         })?;
@@ -59,7 +61,7 @@ impl Plugin {
             thread::spawn(move || {
                 twitch::init(handle, sender, config).unwrap_or_else(|error| {
                     schedule(move |()| {
-                        Plugin::err(&format!("[nvim-chaos] {error}"));
+                        Plugin::err(error.to_string().as_str());
                     });
                 });
             });
@@ -79,7 +81,7 @@ impl Plugin {
 
         schedule(move |()| {
             if let Err(error) = plugin.parse_command(payload.command) {
-                Plugin::err(&format!("[nvim-chaos] {error}"));
+                Plugin::err(error.to_string().as_str());
             }
         });
     }
@@ -89,7 +91,7 @@ impl Plugin {
 
         match command {
             twitch::Command::Message(author, text) => {
-                Plugin::show_msg(author.as_str(), text.as_str());
+                Plugin::show_msg(author.as_str(), text.as_str())?;
             }
             twitch::Command::ColorScheme(colorscheme, background) => {
                 let background = Background::from_str(&background).unwrap();
@@ -117,13 +119,13 @@ impl Plugin {
         Ok(())
     }
 
-    fn parse_config(&mut self, preferences: Object) {
+    fn parse_config(&mut self, preferences: Object) -> Result<()> {
         let config = Config::try_from(preferences);
 
         match config {
             Ok(config) => {
                 CONFIG.set(config).unwrap();
-                self.init().unwrap();
+                self.init()?;
             }
             Err(error) => {
                 let opts = EchoOpts::builder().build();
@@ -135,6 +137,8 @@ impl Plugin {
                 let _ = api::echo(chunks, true, &opts);
             }
         }
+
+        Ok(())
     }
 
     pub fn build_api(&mut self) -> nvim_oxi::Dictionary {
@@ -142,14 +146,16 @@ impl Plugin {
 
         let setup = Function::from_fn(move |preferences: Object| {
             let mut plugin = plugin.clone();
-            plugin.parse_config(preferences);
+            plugin.parse_config(preferences).unwrap_or_else(|err| {
+                Plugin::err(err.to_string().as_str());
+            });
         });
 
         Dictionary::from_iter([("setup", setup)])
     }
 
     pub fn err(str: &str) {
-        api::err_writeln(str);
+        api::err_writeln(&format!("[nvim-chaos] {str}"));
     }
 
     fn update(&mut self) -> Result<()> {
@@ -182,7 +188,23 @@ impl Plugin {
         Ok(())
     }
 
-    pub fn show_msg(author: &str, message: &str) {
+    fn play_msg_sound() -> Result<()> {
+        let (_stream, stream_handle) = rodio::OutputStream::try_default()?;
+
+        let data = include_bytes!("../../audio/icq.mp4");
+        let buff = Cursor::new(data);
+        let source = Decoder::new(buff)?;
+
+        let sink = rodio::Sink::try_new(&stream_handle)?;
+
+        sink.set_volume(0.05);
+        sink.append(source);
+        sink.sleep_until_end();
+
+        Ok(())
+    }
+
+    pub fn show_msg(author: &str, message: &str) -> Result<()> {
         let mut option_opts = Dictionary::new();
 
         option_opts.insert("title", author);
@@ -190,37 +212,15 @@ impl Plugin {
 
         let message = wrap_text(message, 40);
 
-        schedule(move |()| {
-            api::notify(&message, api::types::LogLevel::Off, &option_opts).unwrap();
-        });
+        api::notify(&message, api::types::LogLevel::Off, &option_opts)?;
 
         let _ = thread::spawn(move || {
-            let stream = rodio::OutputStream::try_default();
-
-            match stream {
-                Ok((_stream, stream_handle)) => {
-                    let data = include_bytes!("../../audio/icq.mp4");
-                    let buff = Cursor::new(data);
-                    let source = Decoder::new(buff);
-
-                    match source {
-                        Ok(source) => {
-                            let sink = rodio::Sink::try_new(&stream_handle).unwrap();
-
-                            sink.set_volume(0.1);
-                            sink.append(source);
-                            sink.sleep_until_end();
-                        }
-                        Err(err) => {
-                            Plugin::err(&format!("[nvim-chaos] {err}"));
-                        }
-                    }
-                }
-                Err(err) => {
-                    Plugin::err(&format!("[nvim-chaos] {err}"));
-                }
-            }
+            Plugin::play_msg_sound().unwrap_or_else(|err| {
+                Plugin::err(err.to_string().as_str());
+            });
         });
+
+        Ok(())
     }
 }
 
