@@ -1,19 +1,18 @@
 # Chaos Neovim
 
-Neovim plugin which makes coding difficult if you're a Twitch streamer.
+Neovim plugin that makes coding more difficult if you're a Twitch streamer.
 
 ## Features
-Showing message from chatter inside the editor
 
-Changing current colorscheme
-
-Enabling Vim Motions Hell mode which inverts vim motions bindings
+* Displays messages from chatters inside the editor
+* Changes the current colorscheme
+* Enables Vim Motions Hell mode, which inverts Vim motion bindings
 
 ## Installation
 
-It's written in [Rust](https://www.rust-lang.org/tools/install) (don't ask why) which is *required* for installation
+It's written in [Rust](https://www.rust-lang.org/tools/install) (don't ask why) which is *required* for installation.
 
-Tested only on Linux (Ubuntu)
+Tested on Ubuntu, Mac OS.
 
 ### lazy.nvim
 
@@ -36,18 +35,18 @@ Plug 'inferst/nvim-chaos', { 'do': './install.sh' }
 ## Configuration
 
 ```lua
--- You need to setup plugin and set your twitch channel.
+-- You need to set up the plugin and specify your Twitch channel.
 -- Other parameters are optional.
--- Duration for Colorscheme command is 5 min, form vim motions hell is 1 min.
+-- Duration for the Colorscheme command is 5 minutes, for Vim Motions Hell it is 1 minute.
 
 local chaos = require 'nvim_chaos'
 chaos.setup {
-    channel = 'your_twitch_channel', -- set your twitch channel here
+    channel = 'your_twitch_channel', -- set your Twitch channel here
     commands = {
-      message = '!msg', -- name of message command
+      message = '!msg', -- name of the message command
       colorscheme = {
-        -- First argument is colorscheme name.
-        -- Second argument is background (dark, light).
+        -- First argument is the colorscheme name.
+        -- Second argument is the background (dark or light).
         name = '!colorscheme',
         duration = 60 * 5,
       },
